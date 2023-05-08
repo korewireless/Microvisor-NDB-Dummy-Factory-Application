@@ -17,11 +17,11 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Build docker image
-      run: docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t microvisor-gpio-sample-image .
+      run: docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t microvisor-hardware-test-sample-image .
     - name: Build code
-      run: docker run --rm -v $(pwd)/:/home/mvisor/project/ --env MV_GA=$MV_GA --name microvisor-gpio-sample microvisor-gpio-sample-image
+      run: docker run --rm -v $(pwd)/:/home/mvisor/project/ --env MV_GA=$MV_GA --name microvisor-hardware-test-sample microvisor-hardware-test-sample-image
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
         name: gpio_toggle_demo
-        path: ${{ github.workspace }}/build/Demo/gpio_toggle_demo.*
+        path: ${{ github.workspace }}/build/HardwareTest/hardware_test.*

@@ -15,7 +15,7 @@ add_compile_definitions(BUILD_NUM=${BUILD_NUMBER})
 # Compile app source code file(s)
 add_executable(${PROJECT_NAME}
     Src/main.c
-    Src/stm32u5xx_hal_timebase_tim_template.c
+    Src/stm32u5xx_hal_timebase_tim.c
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

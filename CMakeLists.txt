@@ -46,13 +46,12 @@ add_subdirectory(twilio-microvisor-hal-stm32u5)
 
 # Build the STM32 middleware
 add_library(ST_Code STATIC
-    ST_Code/Core/Src/syscalls.c ST_Code/Core/Src/sysmem.c
+    ST_Code/Core/Src/syscalls.c
+    ST_Code/Core/Src/sysmem.c
     ST_Code/Core/Src/stm32u5xx_hal_msp.c
-    ST_Code/CMSIS_RTOS_V2/cmsis_os2.c
 )
 
 target_include_directories(ST_Code PUBLIC
-    ST_Code/CMSIS_RTOS_V2
     ST_Code/Core/Inc
 )
 

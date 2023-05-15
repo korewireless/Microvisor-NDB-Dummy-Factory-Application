@@ -19,24 +19,11 @@ include_directories(include
 set(INCLUDED_HAL_FILES
     Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c
     Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_cortex.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_dma.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_dma_ex.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_exti.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_flash.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_flash_ex.c
     Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gpio.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gtzc.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_i2c.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_i2c_ex.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_icache.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c
     Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c
     Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c
     Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_tim.c
     Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_tim_ex.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c
-    Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart_ex.c
     Drivers/CMSIS/Device/ST/STM32U5xx/Source/Templates/system_stm32u5xx_ns.c
     Drivers/CMSIS/Device/ST/STM32U5xx/Source/Templates/gcc/startup_stm32u585xx.s
 )

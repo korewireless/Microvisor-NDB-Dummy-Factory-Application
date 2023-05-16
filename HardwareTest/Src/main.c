@@ -17,6 +17,7 @@
 #include "network.h"
 #include "test_runner.h"
 #include "system.h"
+#include "logger.h"
 
 static struct NetworkTaskArgument network_task_argument;
 static struct HardwareTestTaskArgument hardware_test_task_argument;
@@ -25,6 +26,9 @@ static struct HardwareTestTaskArgument test_runner_task_argument;
 int main(void) {
     /* Initialize the system */
     system_init();
+
+    /* Initialize the logging */
+    server_log_init();
 
     network_task_argument.in_queue = xQueueCreate(5, sizeof(enum Message));
     network_task_argument.out_queue = xQueueCreate(5, sizeof(enum Message));

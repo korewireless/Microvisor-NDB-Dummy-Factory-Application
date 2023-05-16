@@ -1,16 +1,27 @@
-# FreeRTOS Microvisor Sample Project
+# Microvisor test image sample project
 
-This repo provides a basic demonstration of user application firmware based on the [FreeRTOS](https://freertos.org/) real-time operating system and which will run on the “non-secure” side of Microvisor.
+This repo shows an example of Microvisor test image. Microvisor test image runs in the final stage of the [Microvisor device manufacturing process](TODO: link) and its purpose is to test the device- and application-specific hardware after the manufacturing. As such it is a part of [Microvisor manufacturing bundle](TODO: link) you need to provide to [Microvisor manufacturing fixture](TODO: link)
 
-The [ARM CMSIS-RTOS API](https://github.com/ARM-software/CMSIS_5) is used an an intermediary between the application and FreeRTOS to make it easier to swap out the RTOS layer for another.
+Every test image is as unique as the device it is testing. Some devices will be able to fully self-test, while others with require a bespoke test rig. Some will be able to connect to Microvisor cloud, and from there to other remote endpoints, while others, e.g. those equipped with a cellular modem that does not support the region device is manufactured it, will have to stay offline. Some test processes will be fully automated, while others will need a technician interacting with the device. The set of peripherals you use during the test will also be unique to your device.
 
-Most of the project files can be found in the [Demo/](Demo/) directory. The [ST_Code/](ST_Code/) directory contains required components that are not part of Twilio Microvisor STM32U5 HAL, which this sample accesses as a submodule. FreeRTOS is also incorporated as a submodule.
+Whatever your test procedure looks like, the test image will need to be in control of it. It is up to the test image to signal to the kernel (and eventualy the [test fixture](TODO: link)) whether the test has been successful. It does so by issuing `mvTestingComplete(uint32_t result)` [Microvisor call](TODO: link). It should be the last call in the testing procedure, there is no guarantee that any code after it will run.
 
-The `FreeRTOSConfig.h` and `stm32u5xx_hal_conf.h` configuration files are located in the [Config/](Config/) directory.
+Successful test is indicated by `mvTestingComplete(0)`, Microvisor will then proceed to run the production application provided in the [manufacturing bundle](TODO: link).
 
-The sample code toggles GPIO PA5, which is the user LED on the [Microvisor Nucleo Development Board](https://www.twilio.com/docs/iot/microvisor/get-started-with-microvisor). It also emits a “ping” to the Microvisor logger once a second.
+Test failure is indicated by any non-zero value of the `result` parameter. The value is opaque to Microvisor and is shown to the operator of the [test fixture](TODO: link) as is. It can serve as a coarse indicator of the failure reason in case no other means of interaction are available.
 
-## Platform Support
+## Microvisor test image environment
+
+Microvisor test image is in most regards a normal Microvisor application. During the development you can deploy it the [same way you would deploy a normal application](TODO: link) to run in Microvisor application environment. When run during the [manufacturing process](TODO: link) the enviromnent is sligtly different though.
+
+1. `mvTestingComplete()` call becomes available. The application (or test image run in application environment) can call it too, but it will have no effect and return `MV_STATUS_UNAVAILABLE`.
+2. Manufacturing console requires provisioning console to be available. For that it needs to reserve some peripherals to the secure space, respectively making then unavailable to the application. These include:
+    * GPDMA channels 4 and 5
+    * Pins PB0 and PE4
+    * EXTI4 interrupt line
+    * LPTIM2 timer
+
+## Building the test image
 
 We currently support the following build platforms:
 
@@ -32,27 +43,32 @@ You will need Administrator privileges to install WSL.
 
 ## Build with Docker
 
+----
+**NOTE**
+
 If you are running on an architecture other than x86/amd64 (such as a Mac with Apple silicon), you will need to override the platform when running docker. This is needed for the `twilio-cli` `apt` package which is x86 only at this time:
 
 ```shell
 export DOCKER_DEFAULT_PLATFORM=linux/amd64
 ```
+----
 
-Build the image:
+1. Build the image:
 
 ```shell
-docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t microvisor-freertos-image .
+docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t microvisor-hardware-test-image .
 ```
 
-Run the build:
+2. Edit `env.list` to set account credentials and (optionally) device SID. 
+3. Run the image:
 
 ```shell
 docker run -it --rm -v $(pwd)/:/home/mvisor/project/ \
   --env-file env.list \
-  --name microvisor-freertos microvisor-freertos-image
+  --name microvisor-hardware-test microvisor-hardware-test-image
 ```
 
-Under Docker, the demo is compiled, uploaded and deployed to your development board. It also initiates logging — hit <b>ctrl</b>-<b>c</b> to break out to the command prompt.
+Under Docker, the image is built, signed by the cloud and written to `artifacts` directory.  If device SID is set the image will also be deployed over the air to the device to run as a normal application, and debug stream will be open.
 
 ## Build in Ubuntu
 
@@ -67,7 +83,7 @@ sudo apt install gcc-arm-none-eabi binutils-arm-none-eabi \
 
 ### Twilio CLI
 
-Install the Twilio CLI. This is required to view streamed logs and for remote debugging. You need version 4.0.1 or above.
+Install the Twilio CLI. This is required to sign test bundle, view streamed logs and for remote debugging. You need version 4.0.1 or above.
 
 **Note** If you have already installed the Twilio CLI using *npm*, we recommend removing it and then reinstalling as outlined below. Remove the old version with `npm remove -g twilio-cli`.
 
@@ -85,7 +101,7 @@ Close your terminal window or tab, and open a new one. Now run:
 twilio plugins:install @twilio/plugin-microvisor
 ```
 
-The process outlined below requires Plugin 0.3.10 or above.
+The process outlined below requires Plugin 0.3.11 or above.
 
 ### Set Environment Variables
 
@@ -107,65 +123,65 @@ twilio api:microvisor:v1:devices:list
 
 It is also accessible via the QR code on the back of your development board. Scan the code with your mobile phone and a suitable app, and the board’s SID is the third `/`-separated field.
 
-### Build and Deploy the Demo
+### Build and test the demo
+
+#### Build with CMake
 
 ```bash
-cd twilio-microvisor-freertos
-twilio microvisor:deploy . --devicesid ${MV_DEVICE_SID} --log
+cd twilio-microvisor-hardware-test-demo
+mkdir build
+cd build
+cmake ..
+make -j$(nproc)
 ```
 
-This will compile, bundle and upload the code, and stage it for deployment to your device. If you encounter errors, please check your stored Twilio credentials.
+#### Bundle
 
-The `--log` flag initiates log-streaming.
+Binary needs to be bundled before it can be deployed to Microvisor cloud
+```bash
+twilio microvisor apps bundle ./HardwareTest/hardware_test_sample.bin ./HardwareTest/hardware_test_sample.bundle
+```
+
+#### Deploy for testing
+
+First application needs to be created on the cloud.
+
+```bash
+APPLICATION_SID=$(twilio microvisor apps create ./HardwareTest/hardware_test_sample.bundle -o json | jq -r .[0].sid)
+```
+
+Next it needs to be assigned to a device.
+
+```bash
+twilio api:microvisor:v1:devices:update --sid $MV_DEVICE_SID --target-app $APPLICATION_SID
+```
 
 #### View Log Output
 
-You can start log streaming without first building and/or deploying new code with this command:
+You can stream logs from the test application as following.
 
 ```bash
-twilio microvisor:deploy . --devicesid ${MV_DEVICE_SID} --logonly
+twilio microvisor logs stream $MV_DEVICE_SID}
 ```
 
-You can build but not deploy with this command:
+### Creating manufacturing artifact
+As device might not be able to connect to Microvisor cloud in the manufacturing facility, test image should come to the factory fixture pre-signed. Once you're done developing and testing you image, you can bundle it as usual:
 
 ```bash
-twilio microvisor:deploy . --build
+twilio microvisor apps bundle ./build/HardwareTest/hardware_test_sample.bin ./build/HardwareTest/hardware_test_sample.bundle
 ```
 
-You can deploy the most recent build with this command:
+That creates an unsigned bundle. You can then have it signed by the cloud with:
 
 ```bash
-twilio microvisor:deploy . --device-sid ${MV_DEVICE_SID} --deploy
+twilio microvisor apps create ./build/HardwareTest/hardware_test_sample.bundle --bundle-out ./build/HardwareTest/hardware_test_sample.signed.bundle
 ```
 
-You can clean the most build directory before compiling with this command:
-
-```bash
-twilio microvisor:deploy . --device-sid ${MV_DEVICE_SID} --clean
-```
-
-For more information, run:
-
-```bash
-twilio microvisor:deploy --help
-```
-
-## Repo Updates
-
-Update the repo’s submodules to their remotes’ latest commits with:
-
-```shell
-cd /path/to/twilio-microvisor-freertos
-git submodule update --init --remote --recursive
-```
+Note that it's the same command that creates a normal application, but with an additional parameter to save the signed bundle. The bundle will be uploaded to Microvisor cloud and will be available to your devices as an application to continue running the tests with it.
 
 ## Support/Feedback
 
 Please contact [Twilio Support](https://support.twilio.com/).
-
-## More Samples
-
-Please see [Microvisor Sample Code](https://www.twilio.com/docs/iot/microvisor/sample-code).
 
 ## Copyright
 

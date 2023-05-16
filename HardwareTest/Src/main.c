@@ -30,6 +30,8 @@ int main(void) {
     /* Initialize the logging */
     server_log_init();
 
+    server_log("main: initializing the threads");
+
     network_task_argument.in_queue = xQueueCreate(5, sizeof(enum Message));
     network_task_argument.out_queue = xQueueCreate(5, sizeof(enum Message));
 
@@ -69,5 +71,6 @@ int main(void) {
 
     vTaskStartScheduler();
 
+    server_log("main: threads initialised, waiting for test to complete");
     while (1) {}
 }

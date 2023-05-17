@@ -35,7 +35,7 @@ static volatile bool                  solicited_change = false;
 static volatile bool                   want_network = false;
 static volatile bool                  _have_network = false;
 
-static uint8_t http_receive_buffer[512] __attribute__ ((aligned(512)));
+static uint8_t http_receive_buffer[4096] __attribute__ ((aligned(512)));
 static uint8_t http_send_buffer[512] __attribute__ ((aligned(512)));
 
 static void configure_network();
@@ -249,6 +249,10 @@ enum MvStatus open_http_channel(MvChannelHandle *handle_out) {
             .send_buffer = (uint8_t*)http_send_buffer,
             .send_buffer_len = sizeof(http_send_buffer),
             .channel_type = MV_CHANNELTYPE_HTTP,
+	    .endpoint = {
+                .data = (uint8_t*) "dummy",
+		.length = 5
+	    }
         }
     };
 

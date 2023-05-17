@@ -40,15 +40,19 @@ int do_send_test_result(int result_code, const char* result_string) {
     enum Message message = JoinNetworkMessage;
 
     if (!xQueueSend(network_in_queue, &message, 0)) {
+        server_log("test runner: error sending to network queue");
         return InternalErrorTestResult;
     }
 
     if (!xQueueReceive(network_out_queue, &message, NETWORK_CONNECTION_TIMEOUT_MS)) {
+        server_log("test runner: time out joining network");
         return NetworkTimeoutTestResult;
     }
 
     MvChannelHandle http_handle;
-    if (open_http_channel(&http_handle) != MV_STATUS_OKAY) {
+    enum MvStatus status = open_http_channel(&http_handle);
+    if (status != MV_STATUS_OKAY) {
+        server_log("test runner: failed to open HTTP channel: %d", status);
         return HttpErrorTestResult;
     }
 
@@ -57,6 +61,13 @@ int do_send_test_result(int result_code, const char* result_string) {
     } else {
         snprintf(http_request_buffer, sizeof(http_request_buffer), "{\"result_code\":%d}", result_code);
     }
+
+    const char *content_type = "Content-Type: application/json";
+    struct MvHttpHeader header = {
+        .length = strlen(content_type),
+	.data = (uint8_t*) content_type
+    };
+
     struct MvHttpRequest http_request = {
         .method = {
             .data = (uint8_t*) "GET",
@@ -70,36 +81,46 @@ int do_send_test_result(int result_code, const char* result_string) {
             .data = (uint8_t*)http_request_buffer,
             .length = strlen(http_request_buffer)
         },
-        .headers = NULL,
-        .num_headers = 0,
+        .headers = &header,
+        .num_headers = 1,
         .timeout_ms = 5000,
     };
 
-    if (mvSendHttpRequest(http_handle, &http_request) != MV_STATUS_OKAY) {
+    status = mvSendHttpRequest(http_handle, &http_request);
+    if (status != MV_STATUS_OKAY) {
+        server_log("test runner: failed to send HTTP request: %d", status);
         return HttpErrorTestResult;
     }
 
     struct MvHttpResponseData response_data;
     int timeout_counter = 0;
     for (int timeout_counter = 0; timeout_counter < 10; timeout_counter++) {
-        enum MvStatus status = mvReadHttpResponseData(http_handle, &response_data);
+        status = mvReadHttpResponseData(http_handle, &response_data);
 
         if (status == MV_STATUS_OKAY) {
             break;
         } else if (status == MV_STATUS_RESPONSENOTPRESENT) {
             vTaskDelay(1000);
         } else {
+            server_log("test runner: failed to get HTTP response: %d", status);
             return HttpErrorTestResult;
         }
     }
 
     if (timeout_counter == 10) {
+        server_log("test runner: time out on HTTP response");
+        return HttpErrorTestResult;
+    }
+
+    if (response_data.result != MV_HTTPRESULT_OK) {
+        server_log("test runner: HTTP request failed %d", response_data.result);
         return HttpErrorTestResult;
     }
 
     if (response_data.status_code == 200) {
         return result_code;
     } else {
+        server_log("test runner: HTTP endpoint returned code %d", response_data.status_code);
         return HttpErrorTestResult;
     }
 }
@@ -117,7 +138,9 @@ void start_test_runner_task(void *argument) {
     int result = do_run_test(&result_string);
     server_log("test runner: test complete with result %d, error string \"%s\"", result, result_string);
 #ifdef CONFIG_CONNECTED_FACTORY
+    server_log("test runner: sending result to remote endpoint");
     result = do_send_test_result(result, result_string);
+    server_log("test runner: sending complete, final result code is %d", result);
 #endif
 
     mvTestingComplete(result);

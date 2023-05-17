@@ -115,7 +115,7 @@ void start_test_runner_task(void *argument) {
 
     server_log("test runner: starting the test");
     int result = do_run_test(&result_string);
-    server_log("test runner: test complete with result %d, error string %s", result, result_string);
+    server_log("test runner: test complete with result %d, error string \"%s\"", result, result_string);
 #ifdef CONFIG_CONNECTED_FACTORY
     result = do_send_test_result(result, result_string);
 #endif

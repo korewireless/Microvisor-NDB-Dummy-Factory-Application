@@ -47,6 +47,9 @@ static int do_test_hardware()
     //   is pulled low externally.
     gpio_init();
 
+    // Delay to let the value settle
+    vTaskDelay(100);
+
     GPIO_PinState state = HAL_GPIO_ReadPin(GPIOA_NS, GPIO_PIN_7);
 
     if (state == GPIO_PIN_RESET) {

@@ -21,7 +21,7 @@
 
 static struct NetworkTaskArgument network_task_argument;
 static struct HardwareTestTaskArgument hardware_test_task_argument;
-static struct HardwareTestTaskArgument test_runner_task_argument;
+static struct TestRunnerTaskArgument test_runner_task_argument;
 
 int main(void) {
     /* Initialize the system */
@@ -38,7 +38,13 @@ int main(void) {
     hardware_test_task_argument.in_message_queue = xQueueCreate(5, sizeof(enum Message));
     hardware_test_task_argument.out_result_queue = xQueueCreate(5, sizeof(struct HardwareTestResultMessage));
 
-    /* Create the thread(s) */
+    test_runner_task_argument.hardware_test_in_queue = hardware_test_task_argument.in_message_queue;
+    test_runner_task_argument.hardware_test_out_queue = hardware_test_task_argument.out_result_queue;
+
+    test_runner_task_argument.network_in_queue = network_task_argument.in_queue;
+    test_runner_task_argument.network_out_queue = network_task_argument.out_queue;
+
+    /* Create the threads */
     if (!xTaskCreate(start_hardware_test_task,
                      "HardwareTestTask",
                      configMINIMAL_STACK_SIZE/sizeof(StackType_t),

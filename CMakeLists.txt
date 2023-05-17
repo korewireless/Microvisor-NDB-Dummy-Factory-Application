@@ -3,13 +3,13 @@ cmake_minimum_required(VERSION 3.12)
 # Set project name
 set(PROJECT_NAME "hardware_test_sample")
 
-# Set to 0 to build without remote debugging enabled
-set(ENABLE_REMOTE_DEBUGGING 1)
-
-# Set to false to stop '[DEBUG]' messages being logged
-add_compile_definitions(LOG_DEBUG_MESSAGES=true)
-
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/toolchain.cmake")
+
+option(CONNECTED_FACTORY "if device can connect to the cloud in the factory" ON)
+
+if(CONNECTED_FACTORY)
+    add_compile_definitions(CONFIG_CONNECTED_FACTORY=1)
+endif(CONNECTED_FACTORY)
 
 project(${PROJECT_NAME} C ASM)
 

@@ -29,9 +29,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Link built libraries
 target_link_libraries(${PROJECT_NAME} LINK_PUBLIC
-    ST_Code
     twilio-microvisor-hal-stm32u5
     FreeRTOS
+    ST_Code
 )
 
 # Optional informational and additional format generation

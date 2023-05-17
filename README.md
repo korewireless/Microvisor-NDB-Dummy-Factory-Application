@@ -43,16 +43,6 @@ You will need Administrator privileges to install WSL.
 
 ## Build with Docker
 
-----
-**NOTE**
-
-If you are running on an architecture other than x86/amd64 (such as a Mac with Apple silicon), you will need to override the platform when running docker. This is needed for the `twilio-cli` `apt` package which is x86 only at this time:
-
-```shell
-export DOCKER_DEFAULT_PLATFORM=linux/amd64
-```
-----
-
 1. Build the image:
 
 ```shell

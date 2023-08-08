@@ -1,18 +1,18 @@
 # Microvisor test image sample project
 
-This repo shows an example of Microvisor test image. Microvisor test image runs in the final stage of the [Microvisor device manufacturing process](TODO: link) and its purpose is to test the device- and application-specific hardware after the manufacturing. As such it is a part of [Microvisor manufacturing bundle](TODO: link) you need to provide to [Microvisor manufacturing fixture](TODO: link)
+This repo shows an example of Microvisor test image. Microvisor test image runs in the final stage of the [Microvisor factory flow](https://www.twilio.com/docs/iot/microvisor/manufacturing#the-factory-flow) and its purpose is to test the device- and application-specific hardware after the manufacturing. As such it is a part of [DUT SPI flash image](https://www.twilio.com/docs/iot/microvisor/manufacturing#the-pre-factory-flow) you need to give to [Microvisor manufacturing fixture](TODO: link)
 
 Every test image is as unique as the device it is testing. Some devices will be able to fully self-test, while others with require a bespoke test rig. Some will be able to connect to Microvisor cloud, and from there to other remote endpoints, while others, e.g. those equipped with a cellular modem that does not support the region device is manufactured it, will have to stay offline. Some test processes will be fully automated, while others will need a technician interacting with the device. The set of peripherals you use during the test will also be unique to your device.
 
-Whatever your test procedure looks like, the test image will need to be in control of it. It is up to the test image to signal to the kernel (and eventualy the [test fixture](TODO: link)) whether the test has been successful. It does so by issuing `mvTestingComplete(uint32_t result)` [Microvisor call](TODO: link). It should be the last call in the testing procedure, there is no guarantee that any code after it will run.
+Whatever your test procedure looks like, the test image will need to be in control of it. It is up to the test image to signal to the kernel (and eventualy the [test fixture](TODO: link)) whether the test has been successful. It does so by issuing `mvTestingComplete(uint32_t result)` [Microvisor call](https://www.twilio.com/docs/iot/microvisor/syscalls/factory). It should be the last call in the testing procedure, there is no guarantee that any code after it will run.
 
-Successful test is indicated by `mvTestingComplete(0)`, Microvisor will then proceed to run the production application provided in the [manufacturing bundle](TODO: link).
+Successful test is indicated by `mvTestingComplete(0)`, Microvisor will then proceed to run the production application contained in the [SPI flash image](https://www.twilio.com/docs/iot/microvisor/manufacturing#the-pre-factory-flow).
 
 Test failure is indicated by any non-zero value of the `result` parameter. The value is opaque to Microvisor and is shown to the operator of the [test fixture](TODO: link) as is. It can serve as a coarse indicator of the failure reason in case no other means of interaction are available.
 
 ## Microvisor test image environment
 
-Microvisor test image is in most regards a normal Microvisor application. During the development you can deploy it the [same way you would deploy a normal application](TODO: link) to run in Microvisor application environment. When run during the [manufacturing process](TODO: link) the enviromnent is sligtly different though.
+Microvisor test image is in most regards like a normal Microvisor application. During the development you can deploy it in the same way you would [deploy a normal application](https://www.twilio.com/docs/iot/microvisor/applications-and-bundles#create-and-upload-bundles) to run in Microvisor application environment. When [run as a part of the manufacturing process](https://www.twilio.com/docs/iot/microvisor/manufacturing#the-microvisor-test) the enviromnent is sligtly different though.
 
 1. `mvTestingComplete()` call becomes available. The application (or test image run in application environment) can call it too, but it will have no effect and return `MV_STATUS_UNAVAILABLE`.
 2. Manufacturing console requires provisioning console to be available. For that it needs to reserve some peripherals to the secure space, respectively making then unavailable to the application. These include:

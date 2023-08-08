@@ -12,7 +12,7 @@ Test failure is indicated by any non-zero value of the `result` parameter. The v
 
 ## Microvisor test image environment
 
-Microvisor test image is in most regards like a normal Microvisor application. During the development you can deploy it in the same way you would [deploy a normal application](https://www.twilio.com/docs/iot/microvisor/applications-and-bundles#create-and-upload-bundles) to run in Microvisor application environment. When [run as a part of the manufacturing process](https://www.twilio.com/docs/iot/microvisor/manufacturing#the-microvisor-test) the enviromnent is sligtly different though.
+Microvisor test image is in most regards like a normal Microvisor application. During the development you can deploy it in the same way you would [deploy a normal application](https://www.twilio.com/docs/iot/microvisor/applications-and-bundles#create-and-upload-bundles) to run in Microvisor application environment. When [run as a part of the manufacturing process](https://www.twilio.com/docs/iot/microvisor/manufacturing#your-hardware-tests) the enviromnent is sligtly different though.
 
 1. `mvTestingComplete()` call becomes available. The application (or test image run in application environment) can call it too, but it will have no effect and return `MV_STATUS_UNAVAILABLE`.
 2. Manufacturing console requires provisioning console to be available. For that it needs to reserve some peripherals to the secure space, respectively making then unavailable to the application. These include:

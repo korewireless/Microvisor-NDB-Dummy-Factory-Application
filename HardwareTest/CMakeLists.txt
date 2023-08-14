@@ -15,7 +15,7 @@ add_compile_definitions(BUILD_NUM=${BUILD_NUMBER})
 # Compile app source code file(s)
 add_executable(${PROJECT_NAME}
     Src/main.c
-    Src/hardware_test.c
+    Src/gpio_shorts_test.c
     Src/logger.c
     Src/network.c
     Src/test_runner.c

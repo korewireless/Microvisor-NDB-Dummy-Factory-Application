@@ -20,7 +20,7 @@ enum TestResult {
     OkTestResult = 0,
     GpioHighTestResult = 1,
     InternalErrorTestResult = 2,
-    HardwareTestTimeoutTestResult = 3,
+    GpioShortsTestTimeoutTestResult = 3,
     NetworkTimeoutTestResult = 4,
     HttpErrorTestResult = 4,
 };

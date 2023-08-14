@@ -19,8 +19,8 @@ extern "C" {
 
 struct TestRunnerTaskArgument
 {
-    QueueHandle_t hardware_test_in_queue;
-    QueueHandle_t hardware_test_out_queue;
+    QueueHandle_t gpio_shorts_test_in_queue;
+    QueueHandle_t gpio_shorts_test_out_queue;
 
     QueueHandle_t network_in_queue;
     QueueHandle_t network_out_queue;

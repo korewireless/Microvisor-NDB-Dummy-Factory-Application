@@ -3,33 +3,33 @@
 #include "logger.h"
 #include "messages.h"
 #include "network.h"
-#include "hardware_test.h"
+#include "gpio_shorts_test.h"
 
 #include <stdio.h>
 #include <string.h>
 
 static char http_request_buffer[512];
 
-static QueueHandle_t hardware_test_in_queue;
-static QueueHandle_t hardware_test_out_queue;
+static QueueHandle_t gpio_shorts_test_in_queue;
+static QueueHandle_t gpio_shorts_test_out_queue;
 
 static QueueHandle_t network_in_queue;
 static QueueHandle_t network_out_queue;
 
-#define HARDWARE_TEST_TIMEOUT_MS 10000
+#define GPIO_SHORTS_TEST_TIMEOUT_MS 10000
 #define NETWORK_CONNECTION_TIMEOUT_MS 30000
 
 int do_run_test(const char** result_string) {
     enum Message message = StartTestMessage;
-    if (!xQueueSend(hardware_test_in_queue, &message, 0)) {
+    if (!xQueueSend(gpio_shorts_test_in_queue, &message, 0)) {
         *result_string = "Failed to send to FreeRTOS queue";
         return InternalErrorTestResult;
     }
 
     struct HardwareTestResultMessage result_message;
-    if (!xQueueReceive(hardware_test_out_queue, &result_message, HARDWARE_TEST_TIMEOUT_MS)) {
-        *result_string = "Hardware test timed out";
-        return HardwareTestTimeoutTestResult;
+    if (!xQueueReceive(gpio_shorts_test_out_queue, &result_message, GPIO_SHORTS_TEST_TIMEOUT_MS)) {
+        *result_string = "Gpio shorts test timed out";
+        return GpioShortsTestTimeoutTestResult;
     }
 
     *result_string = result_message.failure_description;
@@ -129,8 +129,8 @@ void start_test_runner_task(void *argument) {
     struct TestRunnerTaskArgument *typed_argument = (struct TestRunnerTaskArgument *) argument;
     const char *result_string;
 
-    hardware_test_in_queue = typed_argument->hardware_test_in_queue;
-    hardware_test_out_queue = typed_argument->hardware_test_out_queue;
+    gpio_shorts_test_in_queue = typed_argument->gpio_shorts_test_in_queue;
+    gpio_shorts_test_out_queue = typed_argument->gpio_shorts_test_out_queue;
     network_in_queue = typed_argument->network_in_queue;
     network_out_queue = typed_argument->network_out_queue;
 

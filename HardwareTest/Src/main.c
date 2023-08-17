@@ -36,7 +36,7 @@ int main(void) {
     network_task_argument.out_queue = xQueueCreate(5, sizeof(enum Message));
 
     gpio_shorts_test_task_argument.in_message_queue = xQueueCreate(5, sizeof(enum Message));
-    gpio_shorts_test_task_argument.out_result_queue = xQueueCreate(5, sizeof(struct HardwareTestResultMessage));
+    gpio_shorts_test_task_argument.out_result_queue = xQueueCreate(5, sizeof(struct TestResultMessage));
 
     test_runner_task_argument.gpio_shorts_test_in_queue = gpio_shorts_test_task_argument.in_message_queue;
     test_runner_task_argument.gpio_shorts_test_out_queue = gpio_shorts_test_task_argument.out_result_queue;
@@ -52,6 +52,7 @@ int main(void) {
                      0,
                      NULL))
     {
+        server_log("Testing complete: internal error");
         mvTestingComplete(InternalErrorTestResult);
     }
 
@@ -62,6 +63,7 @@ int main(void) {
                      0,
                      NULL))
     {
+        server_log("Testing complete: %d", (int) InternalErrorTestResult);
         mvTestingComplete(InternalErrorTestResult);
     }
 
@@ -72,6 +74,7 @@ int main(void) {
                      0,
                      NULL))
     {
+        server_log("Testing complete: %d", (int) InternalErrorTestResult);
         mvTestingComplete(InternalErrorTestResult);
     }
 

@@ -10,10 +10,9 @@ enum Message {
     StartTestMessage
 };
 
-struct HardwareTestResultMessage
+struct TestResultMessage
 {
     int result_code;
-    char *failure_description; // only valid until next StartTest message
 };
 
 enum TestResult {

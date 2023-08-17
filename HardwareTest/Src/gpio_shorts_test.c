@@ -7,10 +7,10 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define ARRAY_LEN(a) (sizeof(a)/sizeof((a)[0]))
+
 static QueueHandle_t in_queue;
 static QueueHandle_t out_queue;
-
-static char failure_string_buffer[128];
 
 enum GpioLocation {
     P__ = 0,
@@ -32,7 +32,7 @@ static inline unsigned gpio_port_for_location(enum GpioLocation location) {
 }
 
 static inline GPIO_TypeDef *gpio_periph_for_location(enum GpioLocation location) {
-    return GPIOA_NS + gpio_port_for_location(location);
+    return (GPIO_TypeDef*) (((unsigned) GPIOA_NS) + 0x400 * gpio_port_for_location(location));
 }
 
 static inline uint32_t gpio_pin_for_location(enum GpioLocation location) {
@@ -114,7 +114,7 @@ struct GpioShort loopback_baseboard_connections[] = {
 };
 
 static bool mark_baseboard_short(enum GpioLocation one, enum GpioLocation another) {
-    for (int i = 0; i < sizeof(loopback_baseboard_connections)/sizeof(loopback_baseboard_connections[0]); i++) {
+    for (int i = 0; i < ARRAY_LEN(loopback_baseboard_connections); i++) {
        if (loopback_baseboard_connections[i].left == one && loopback_baseboard_connections[i].right == another) {
            loopback_baseboard_connections[i].seen = true;
            return true;
@@ -195,7 +195,7 @@ static void output_gpio(enum GpioLocation location, GPIO_PinState state)
 
     GPIO_InitTypeDef GPIO_InitStruct = { 0 };
     GPIO_InitStruct.Pin   = pin_number;
-    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull  = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
@@ -207,7 +207,7 @@ static void collect_gpios_to_test()
     unsigned i = 0;
     for (enum GpioLocation location = PA0; location <= PI8; location++) {
         bool ignore = false;
-        for (int i = 0; i < sizeof(gpios_to_ignore); i++) {
+        for (int i = 0; i < ARRAY_LEN(gpios_to_ignore); i++) {
             if (location == gpios_to_ignore[i].gpio) {
                 server_log("Not testing %s\n", gpios_to_ignore[i].description);
                 ignore = true;
@@ -227,10 +227,10 @@ static void collect_gpios_to_test()
 // Pins set to HIGH are ignored during the test
 static void check_high_pins()
 {
-    for (int i = 0; i < sizeof(gpio_in_masks); i++) {
-        GPIO_TypeDef *gpio = GPIOA_NS + i;
+    for (int i = 0; i < ARRAY_LEN(gpio_in_masks); i++) {
+        GPIO_TypeDef *gpio = gpio_periph_for_location(PA0 + i * 16);
 	uint32_t high = gpio->IDR & gpio_in_masks[i];
-	gpio_in_masks[i] &= high;
+	gpio_in_masks[i] &= ~high;
 
         if (high != 0) {
             for (unsigned p = 0; p < 16; p++) {
@@ -262,9 +262,10 @@ static void test_gpio_shorts(bool *gpio_test_result, bool *loopback_test_result)
         }
 
         output_gpio(location, GPIO_PIN_SET);
+        vTaskDelay(10);
 
-        for (int i = 0; i < sizeof(gpio_in_masks)/sizeof(gpio_in_masks[0]); i++) {
-            GPIO_TypeDef *another_bank = GPIOA_NS + i;
+        for (int i = 0; i < ARRAY_LEN(gpio_in_masks); i++) {
+            GPIO_TypeDef *another_bank = gpio_periph_for_location(PA0 + i * 16);
             unsigned idr = another_bank->IDR & gpio_in_masks[i];
             if (i == gpio_port_for_location(location)) {
                 // is actually the same bank, make sure current pin is not accounted for
@@ -283,27 +284,26 @@ static void test_gpio_shorts(bool *gpio_test_result, bool *loopback_test_result)
                         has_shorts = true;
 			if (!mark_baseboard_short(location, another_location)) {
                             server_log("Illegal loopback for P%c%u <=> P%c%u\n",
-                                (location >> 4) + '@', location & 0xf,
-                                (another_location >> 4) + '@', another_location & 0xf);
+                                (location >> 4) + 'A' - 1, location & 0xf,
+                                (another_location >> 4) + 'A' - 1, another_location & 0xf);
 
 			    has_illegal_shorts = true;
                         }
                     }
                 }
             }
-            i++;
         }
         tristate_gpio(location);
-        vTaskDelay(100);
+        vTaskDelay(1);
     }
 
     *gpio_test_result = !has_shorts;
 
-    if (has_illegal_shorts) {
+    if (has_illegal_shorts || !has_shorts) {
         *loopback_test_result = false;
     } else {
         bool success = true;
-        for (int i = 0; i < sizeof(loopback_baseboard_connections)/sizeof(loopback_baseboard_connections[0]); i++) {
+        for (int i = 0; i < ARRAY_LEN(loopback_baseboard_connections); i++) {
             if (!loopback_baseboard_connections[i].seen) {
                 const enum GpioLocation left = loopback_baseboard_connections[i].left;
                 const enum GpioLocation right = loopback_baseboard_connections[i].right;
@@ -342,9 +342,9 @@ void start_gpio_shorts_test_task(void *argument) {
             bool loopback_pass = false;
             test_gpio_shorts(&gpio_pass, &loopback_pass);
 
-            struct HardwareTestResultMessage response = {
-                .result_code = gpio_pass || loopback_pass,
-                .failure_description = failure_string_buffer
+            struct TestResultMessage response = {
+                // TODO: split gpio test and loopback test into two stages
+                .result_code = !(gpio_pass || loopback_pass),
             };
 
             xQueueSend(out_queue, &response, 0);

@@ -5,12 +5,6 @@ set(PROJECT_NAME "hardware_test_sample")
 
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/toolchain.cmake")
 
-option(CONNECTED_FACTORY "if device can connect to the cloud in the factory" ON)
-
-if(CONNECTED_FACTORY)
-    add_compile_definitions(CONFIG_CONNECTED_FACTORY=1)
-endif(CONNECTED_FACTORY)
-
 project(${PROJECT_NAME} C ASM)
 
 include_directories(include

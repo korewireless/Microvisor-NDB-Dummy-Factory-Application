@@ -19,20 +19,19 @@ static QueueHandle_t network_out_queue;
 #define GPIO_SHORTS_TEST_TIMEOUT_MS 10000
 #define NETWORK_CONNECTION_TIMEOUT_MS 30000
 
-int do_run_test(const char** result_string) {
+static int do_run_test() {
     enum Message message = StartTestMessage;
     if (!xQueueSend(gpio_shorts_test_in_queue, &message, 0)) {
-        *result_string = "Failed to send to FreeRTOS queue";
+        server_log("test runner: failed to send to FreeRTOS queue");
         return InternalErrorTestResult;
     }
 
-    struct HardwareTestResultMessage result_message;
+    struct TestResultMessage result_message;
     if (!xQueueReceive(gpio_shorts_test_out_queue, &result_message, GPIO_SHORTS_TEST_TIMEOUT_MS)) {
-        *result_string = "Gpio shorts test timed out";
+	server_log("test runner: GPIO shorts test timed out");
         return GpioShortsTestTimeoutTestResult;
     }
 
-    *result_string = result_message.failure_description;
     return result_message.result_code;
 }
 
@@ -127,7 +126,6 @@ int do_send_test_result(int result_code, const char* result_string) {
 
 void start_test_runner_task(void *argument) {
     struct TestRunnerTaskArgument *typed_argument = (struct TestRunnerTaskArgument *) argument;
-    const char *result_string;
 
     gpio_shorts_test_in_queue = typed_argument->gpio_shorts_test_in_queue;
     gpio_shorts_test_out_queue = typed_argument->gpio_shorts_test_out_queue;
@@ -135,14 +133,8 @@ void start_test_runner_task(void *argument) {
     network_out_queue = typed_argument->network_out_queue;
 
     server_log("test runner: starting the test");
-    int result = do_run_test(&result_string);
-    server_log("test runner: test complete with result %d, error string \"%s\"", result, result_string);
-#ifdef CONFIG_CONNECTED_FACTORY
-    server_log("test runner: sending result to remote endpoint");
-    result = do_send_test_result(result, result_string);
-    server_log("test runner: sending complete, final result code is %d", result);
-#endif
-
+    const int result = do_run_test();
+    server_log("test runner: test complete with result %d", result);
     mvTestingComplete(result);
 }
 

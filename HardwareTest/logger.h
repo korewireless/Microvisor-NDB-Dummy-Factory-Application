@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 void server_log_init();
-void server_log(char* format_string, ...);
+void server_log(const char* format_string, ...);
 
 #ifdef __cplusplus
 }

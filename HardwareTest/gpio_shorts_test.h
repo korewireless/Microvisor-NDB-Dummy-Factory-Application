@@ -10,23 +10,24 @@
 #ifndef GPIO_SHORTS_TEST_H
 #define GPIO_SHORTS_TEST_H
 
-#include "FreeRTOS.h"
+#include "freertos_thread.h"
 #include "queue.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class GpioShortsTest: public FreeRTOSThread {
+private:
+  QueueHandle_t in_queue;
+  QueueHandle_t out_queue;
 
-struct GpioShortsTestTaskArgument
-{
-    QueueHandle_t in_message_queue;
-    QueueHandle_t out_result_queue;
+  void run();
+
+public:
+  GpioShortsTest(QueueHandle_t in_queue_arg, QueueHandle_t out_queue_arg) :
+    FreeRTOSThread("GpioShortsTestTask"),
+    in_queue{in_queue_arg},
+    out_queue{out_queue_arg}
+  {
+    start_task();
+  }
 };
-
-void start_gpio_shorts_test_task(void *argument);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // GPIO_SHORTS_TEST_H

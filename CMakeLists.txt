@@ -3,9 +3,10 @@ cmake_minimum_required(VERSION 3.12)
 # Set project name
 set(PROJECT_NAME "hardware_test_sample")
 
-set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/toolchain.cmake")
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/twilio-microvisor-hal-stm32u5/toolchain.cmake")
 
-project(${PROJECT_NAME} C ASM)
+project(${PROJECT_NAME} C CXX ASM)
+
 
 include_directories(include
                     ${twilio-microvisor-hal-stm32u5_INCLUDE_DIRS})

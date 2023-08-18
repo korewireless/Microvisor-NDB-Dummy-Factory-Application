@@ -205,7 +205,8 @@ static void output_gpio(enum GpioLocation location, GPIO_PinState state)
 static void collect_gpios_to_test()
 {
     unsigned i = 0;
-    for (enum GpioLocation location = PA0; location <= PI8; location++) {
+    for (int j = (int)PA0; j <= PI8; j++) {
+        GpioLocation location = (GpioLocation) j;
         bool ignore = false;
         for (int i = 0; i < ARRAY_LEN(gpios_to_ignore); i++) {
             if (location == gpios_to_ignore[i].gpio) {
@@ -331,11 +332,9 @@ static bool got_start_test_message() {
     return false;
 }
 
-void start_gpio_shorts_test_task(void *argument) {
-    struct GpioShortsTestTaskArgument *typed_argument = (struct GpioShortsTestTaskArgument*) argument;
-    out_queue = typed_argument->out_result_queue;
-    in_queue = typed_argument->in_message_queue;
-
+void GpioShortsTest::run() {
+    ::in_queue = in_queue;
+    ::out_queue = out_queue;
     while (1) {
         if (got_start_test_message()) {
             bool gpio_pass = false;

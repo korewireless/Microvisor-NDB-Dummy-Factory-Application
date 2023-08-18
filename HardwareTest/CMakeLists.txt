@@ -11,13 +11,14 @@ message("Building ${APP} ${VERSION_NUMBER} build ${BUILD_NUMBER}")
 add_compile_definitions(APP_NAME="${APP}")
 add_compile_definitions(APP_VERSION="${VERSION_NUMBER}")
 add_compile_definitions(BUILD_NUM=${BUILD_NUMBER})
+add_compile_options(-fpermissive)
 
 # Compile app source code file(s)
 add_executable(${PROJECT_NAME}
-    main.c
-    gpio_shorts_test.c
+    main.cpp
+    gpio_shorts_test.cpp
     logger.c
-    test_runner.c
+    test_runner.cpp
     system.c
     stm32u5xx_hal_timebase_tim.c
 )

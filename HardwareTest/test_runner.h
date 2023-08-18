@@ -10,25 +10,24 @@
 #ifndef TEST_RUNNER_H
 #define TEST_RUNNER_H
 
-#include "FreeRTOS.h"
+#include "freertos_thread.h"
 #include "queue.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class TestRunner: public FreeRTOSThread {
+private:
+  QueueHandle_t in_queue;
+  QueueHandle_t out_queue;
 
-struct TestRunnerTaskArgument
-{
-    QueueHandle_t gpio_shorts_test_in_queue;
-    QueueHandle_t gpio_shorts_test_out_queue;
+  void run();
+
+public:
+  TestRunner(QueueHandle_t in_queue_arg, QueueHandle_t out_queue_arg) :
+    FreeRTOSThread("TestRunnerTask"),
+    in_queue{in_queue_arg},
+    out_queue{out_queue_arg}
+  {
+    start_task();
+  }
 };
-
-void start_test_runner_task(void *argument);
-
-#ifdef __cplusplus
-}
-#endif
-
-
 
 #endif /* NETWORK_H */

@@ -11,7 +11,6 @@ message("Building ${APP} ${VERSION_NUMBER} build ${BUILD_NUMBER}")
 add_compile_definitions(APP_NAME="${APP}")
 add_compile_definitions(APP_VERSION="${VERSION_NUMBER}")
 add_compile_definitions(BUILD_NUM=${BUILD_NUMBER})
-add_compile_options(-fpermissive)
 
 # Compile app source code file(s)
 add_executable(${PROJECT_NAME}

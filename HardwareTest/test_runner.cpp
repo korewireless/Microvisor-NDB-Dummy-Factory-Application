@@ -18,13 +18,15 @@ void TestRunner::run() {
     enum Message message = StartTestMessage;
     if (!xQueueSend(out_queue, &message, 0)) {
         server_log("test runner: failed to send to FreeRTOS queue");
-        return InternalErrorTestResult;
+        mvTestingComplete(InternalErrorTestResult);
+        return;
     }
 
     struct TestResultMessage result_message;
     if (!xQueueReceive(in_queue, &result_message, GPIO_SHORTS_TEST_TIMEOUT_MS)) {
-	server_log("test runner: GPIO shorts test timed out");
-        return GpioShortsTestTimeoutTestResult;
+        server_log("test runner: GPIO shorts test timed out");
+        mvTestingComplete(GpioShortsTestTimeoutTestResult);
+        return;
     }
 
     server_log("test runner: test complete with result %d", result_message.result_code);

@@ -12,7 +12,7 @@ enum Message {
 
 struct TestResultMessage
 {
-    int result_code;
+    uint32_t result_code;
 };
 
 enum TestResult {

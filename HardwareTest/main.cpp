@@ -26,18 +26,18 @@ int main(void) {
     /* Initialize the logging */
     server_log_init();
 
-    //server_log("main: initializing the threads");
-
     QueueHandle_t gpio_shorts_in_queue = xQueueCreate(5, sizeof(enum Message));
     QueueHandle_t gpio_shorts_out_queue = xQueueCreate(5, sizeof(struct TestResultMessage));
 
     /* Create the threads */
 
+    // variables are needed so that the object is not destroyed until end of scope
     static auto gpio_thread = GpioShortsTest(gpio_shorts_in_queue, gpio_shorts_out_queue);
     static auto runner_thread = TestRunner(gpio_shorts_out_queue, gpio_shorts_in_queue);
+    (void) gpio_thread;
+    (void) runner_thread;
 
     vTaskStartScheduler();
 
-    //server_log("main: threads initialised, waiting for test to complete");
     while (1) {}
 }

@@ -18,6 +18,7 @@ private:
   QueueHandle_t in_queue;
   QueueHandle_t out_queue;
 
+  bool got_start_test_message();
   void run();
 
 public:

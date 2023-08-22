@@ -16,6 +16,7 @@ add_compile_definitions(BUILD_NUM=${BUILD_NUMBER})
 add_executable(${PROJECT_NAME}
     main.cpp
     gpio_shorts_test.cpp
+    gpio.cpp
     logger.c
     test_runner.cpp
     system.c

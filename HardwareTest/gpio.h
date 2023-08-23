@@ -33,19 +33,19 @@ struct Gpio {
   Gpio(GpioLocation location_in) : location(location_in) {}
   Gpio(unsigned location_in) : location((GpioLocation) location_in) {}
 
-  unsigned port() { return ((location >> 4) - 1); }
+  unsigned port() const { return ((location >> 4) - 1); }
 
-  GPIO_TypeDef* periph() { return (GPIO_TypeDef*) (((unsigned) GPIOA_NS) + 0x400 * port()); }
+  GPIO_TypeDef* periph() const { return (GPIO_TypeDef*) (((unsigned) GPIOA_NS) + 0x400 * port()); }
 
-  uint32_t pin() { return 1UL << (location & 0xF); }
+  uint32_t pin() const { return 1UL << (location & 0xF); }
 
   bool operator<(const Gpio& other) const { return location < other.location; }
   bool operator==(Gpio other) const { return location == other.location; }
   bool operator==(GpioLocation other) const { return location == other; }
   operator unsigned() const { return location; }
 
-  void tristate();
-  void output(GPIO_PinState state);
+  void tristate() const;
+  void output(GPIO_PinState state) const;
 
   static Gpio from_port_and_pin(unsigned port, unsigned pin) {
     return Gpio(PA0 + port*16 + pin);

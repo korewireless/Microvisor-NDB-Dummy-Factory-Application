@@ -1,6 +1,6 @@
 #include "gpio.h"
 
-void Gpio::tristate()
+void Gpio::tristate() const
 {
   if (location == P__) {
       return;
@@ -14,7 +14,7 @@ void Gpio::tristate()
   HAL_GPIO_Init(periph(), &GPIO_InitStruct);
 }
 
-void Gpio::output(GPIO_PinState state)
+void Gpio::output(GPIO_PinState state) const
 {
   if (location == P__) {
     return;
@@ -29,4 +29,3 @@ void Gpio::output(GPIO_PinState state)
   HAL_GPIO_Init(periph(), &GPIO_InitStruct);
   HAL_GPIO_WritePin(periph(), pin(), state);
 }
-

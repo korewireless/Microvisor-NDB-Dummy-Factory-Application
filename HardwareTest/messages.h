@@ -17,10 +17,12 @@ struct TestResultMessage
 
 enum TestResult {
     OkTestResult = 0,
-    GpioHighTestResult = 1,
-    InternalErrorTestResult = 2,
-    GpioShortsTestTimeoutTestResult = 3,
-    NetworkTimeoutTestResult = 4,
-    HttpErrorTestResult = 4,
+    GpioHasShortsResult = 1,
+    GpioLoopbackTimeoutResult = 2,
+    GpioLoopbackFailureResult = 3,
+    InternalErrorTestResult = 4,
+    GpioShortsTestTimeoutTestResult = 5,
+    NetworkTimeoutTestResult = 6,
+    HttpErrorTestResult = 7,
 };
 #endif // MESSAGES_H

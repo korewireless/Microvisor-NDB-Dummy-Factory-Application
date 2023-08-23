@@ -7,12 +7,14 @@
 
 #include <cstring>
 #include <array>
-#include <set>
+#include <map>
 #include <vector>
 
+namespace {
 class GpioShortsTestRun {
 private:
-  bool has_illegal_shorts = false;
+  const Gpio LED_PIN = PA5;
+
   std::vector<Gpio> gpios_to_test;
 
   std::array<uint32_t, 9> gpio_in_masks = {
@@ -27,7 +29,7 @@ private:
     0x000000ff, // GPIOI
   };
 
-  const std::array<std::pair<Gpio, const char*>, 11> gpios_to_ignore = {{
+  const std::array<std::pair<Gpio, const char*>, 12> gpios_to_ignore = {{
     {PA13, "PA13 = SWDIO"},
     {PA14, "PA14 = SWCLK"},
     {PB3, "PB3 = TRACESWO"},
@@ -39,41 +41,42 @@ private:
     {PB13, "PB13 = ESP_BOOT"},
     {PB13, "PE4 = PROV_UART RX"},
     {PB13, "PB0 = PROV_UART TX"},
+    {PA5, "PA5 = USER_LED"},
   }};
 
-  std::set<std::pair<Gpio, Gpio> > loopback_baseboard_connections = {
-    { PF6,  PC13 },
-    { PF7,  PB7  },
-    { PA0,  PG2  },
-    { PA1,  PD3  },
-    { PD1,  PD5  },
-    { PD6,  PF0  },
-    { PD7,  PF1  },
-    { PE2,  PF2  },
-    { PD0,  PD9  },
-    { PG0,  PG12 },
-    { PE1,  PG9  },
-    { PF8,  PG13 },
-    { PF9,  PG10 },
-    { PG1,  PG15 },
-    { PB9,  PA7  },
-    { PB6,  PA9  },
-    { PD8,  PB11 },
-    { PA8,  PD13 },
-    { PB4,  PA3  },
-    { PB5,  PA10 },
-    { PB2,  PB15 },
-    { PB14, PF5  },
-    { PF4,  PF10 },
-    { PD12, PE13 },
-    { PD11, PE15 },
-    { PE12, PE14 },
-    { PF14, PE9  },
-    { PF13, PD10 },
-    { PF12, PG14 },
-    { PE11, PF11 },
-    { PF3,  PF15 },
-    { PB8,  PE0  },
+  std::map<std::pair<Gpio, Gpio>, bool> loopback_baseboard_connections = {
+    {{ PF6,  PC13 }, false},
+    {{ PF7,  PB7  }, false},
+    {{ PA0,  PG2  }, false},
+    {{ PA1,  PD3  }, false},
+    {{ PD1,  PD5  }, false},
+    {{ PD6,  PF0  }, false},
+    {{ PD7,  PF1  }, false},
+    {{ PE2,  PF2  }, false},
+    {{ PD0,  PD9  }, false},
+    {{ PG0,  PG12 }, false},
+    {{ PE1,  PG9  }, false},
+    {{ PF8,  PG13 }, false},
+    {{ PF9,  PG10 }, false},
+    {{ PG1,  PG15 }, false},
+    {{ PB9,  PA7  }, false},
+    {{ PB6,  PA9  }, false},
+    {{ PD8,  PB11 }, false},
+    {{ PA8,  PD13 }, false},
+    {{ PB4,  PA3  }, false},
+    {{ PB5,  PA10 }, false},
+    {{ PB2,  PB15 }, false},
+    {{ PB14, PF5  }, false},
+    {{ PF4,  PF10 }, false},
+    {{ PD12, PE13 }, false},
+    {{ PD11, PE15 }, false},
+    {{ PE12, PE14 }, false},
+    {{ PF14, PE9  }, false},
+    {{ PF13, PD10 }, false},
+    {{ PF12, PG14 }, false},
+    {{ PE11, PF11 }, false},
+    {{ PF3,  PF15 }, false},
+    {{ PB8,  PE0  }, false},
   };
 
   bool mark_baseboard_short(Gpio one, Gpio another) {
@@ -82,16 +85,31 @@ private:
     auto lr = loopback_baseboard_connections.find({one, another});
     if (lr != loopback_baseboard_connections.end()) {
       found = true;
-      loopback_baseboard_connections.erase(lr);
+      lr->second = true;
     }
 
     auto rl = loopback_baseboard_connections.find({another, one});
     if (rl != loopback_baseboard_connections.end()) {
       found = true;
-      loopback_baseboard_connections.erase(rl);
+      lr->second = true;
     }
 
     return found;
+  }
+
+  void clear_baseboard_shorts() {
+    for (auto it = loopback_baseboard_connections.begin(); it != loopback_baseboard_connections.end(); it++) {
+      it->second = false;
+    }
+  }
+
+  bool has_all_shorts() {
+    for (auto it = loopback_baseboard_connections.begin(); it != loopback_baseboard_connections.end(); it++) {
+      if(!it->second) {
+        return false;
+      }
+    }
+    return true;
   }
 
   static void init_gpio_periphs()
@@ -155,8 +173,9 @@ private:
     }
   }
 
-  bool test_has_shorts();
-  bool test_got_all_shorts_from_loopback();
+  bool test_has_shorts(bool with_loopback = false);
+  bool wait_loopback_board();
+  bool test_with_loopback();
 
 public:
 
@@ -164,23 +183,19 @@ public:
 };
 
 
-bool GpioShortsTestRun::test_has_shorts() {
-  collect_gpios_to_test();
-  init_gpio_periphs();
-
+bool GpioShortsTestRun::test_has_shorts(bool with_loopback) {
   for (auto g : gpios_to_test) {
     g.tristate();
   }
 
   bool has_shorts = false;
-  has_illegal_shorts = false;
   for (auto g : gpios_to_test) {
     if (g == P__) {
       continue;
     }
 
     g.output(GPIO_PIN_SET);
-    vTaskDelay(10);
+    vTaskDelay(1);
 
     for (unsigned int i = 0; i < gpio_in_masks.size(); i++) {
       GPIO_TypeDef *another_bank = Gpio::from_port_and_pin(i, 0).periph();
@@ -200,13 +215,20 @@ bool GpioShortsTestRun::test_has_shorts() {
           g.output(GPIO_PIN_RESET);
           const unsigned idr2 = another_bank->IDR & gpio_in_masks[i];
           if (!(idr2 & (1<<p))) {
-            has_shorts = true;
-            if (!mark_baseboard_short(g, another_location)) {
+            if (with_loopback) {
+              if (!mark_baseboard_short(g, another_location)) {
+                has_shorts = true;
+                server_log("Illegal loopback for P%c%u <=> P%c%u\n",
+                  (g >> 4) + 'A' - 1, g & 0xf,
+                  (another_location >> 4) + 'A' - 1, another_location & 0xf);
+              }
+            } else {
               server_log("Illegal loopback for P%c%u <=> P%c%u\n",
                 (g >> 4) + 'A' - 1, g & 0xf,
                 (another_location >> 4) + 'A' - 1, another_location & 0xf);
 
-              has_illegal_shorts = true;
+
+              has_shorts = true;
             }
           }
         }
@@ -219,33 +241,64 @@ bool GpioShortsTestRun::test_has_shorts() {
   return !has_shorts;
 }
 
-bool GpioShortsTestRun::test_got_all_shorts_from_loopback() {
-  bool success = true;
-  for (auto conn: loopback_baseboard_connections) {
-    server_log("Missing loopback for P%c%u <=> P%c%u\n",
-         (conn.first >> 4) + '@', conn.first & 0xf,
-         (conn.second >> 4) + '@', conn.second & 0xf);
-    success = false;
+bool GpioShortsTestRun::wait_loopback_board() {
+  auto led_pin_state = GPIO_PIN_SET;
+  constexpr int timeout_cycles = 300; // 300*1000 ticks = 30 seconds
+  bool success = false;
+  for (int i = 0; i < timeout_cycles; i++) {
+    TickType_t cycle_start = xTaskGetTickCount();
+    clear_baseboard_shorts();
+    if (!test_has_shorts(true)) {
+      break;
+    } else if(has_all_shorts()) {
+      success = true;
+      break;
+    }
+
+    led_pin_state = (led_pin_state == GPIO_PIN_SET) ? GPIO_PIN_RESET : GPIO_PIN_SET;
+    LED_PIN.output(led_pin_state);
+    vTaskDelayUntil(&cycle_start, 1000);
   }
 
+  LED_PIN.output(GPIO_PIN_RESET);
   return success;
 }
 
-uint32_t GpioShortsTestRun::test() {
-  if (test_has_shorts()) {
-    return 0;
+bool GpioShortsTestRun::test_with_loopback() {
+  clear_baseboard_shorts();
+  if (!test_has_shorts(true)) {
+    return false;
   }
 
-  if (has_illegal_shorts) {
-    return 1;
-  }
-
-  if (test_got_all_shorts_from_loopback()) {
-    return 0;
-  }
-
-  return 2;
+  return has_all_shorts();
 }
+
+uint32_t GpioShortsTestRun::test() {
+  server_log("Start test");
+  collect_gpios_to_test();
+  init_gpio_periphs();
+
+  server_log("Start without loopback baseboard");
+  if (!test_has_shorts()) {
+    return GpioHasShortsResult;
+  }
+
+  server_log("Waiting for loopback baseboard");
+  if (!wait_loopback_board()) {
+    return GpioLoopbackTimeoutResult;
+  }
+
+  server_log("Completing loopback test");
+  if (!test_with_loopback()) {
+    return GpioLoopbackFailureResult;
+  }
+
+  server_log("Loopback test done");
+
+  return OkTestResult;
+}
+
+} // anonymous namespace
 
 bool GpioShortsTest::got_start_test_message() {
   enum Message message = NoneMessage;

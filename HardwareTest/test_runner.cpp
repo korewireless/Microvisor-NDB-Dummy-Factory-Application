@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define GPIO_SHORTS_TEST_TIMEOUT_MS 10000
+#define GPIO_SHORTS_TEST_TIMEOUT_MS 600000
 #define NETWORK_CONNECTION_TIMEOUT_MS 30000
 
 void TestRunner::run() {

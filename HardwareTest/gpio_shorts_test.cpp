@@ -195,7 +195,7 @@ bool GpioShortsTestRun::test_has_shorts(bool with_loopback) {
     }
 
     g.output(GPIO_PIN_SET);
-    vTaskDelay(1);
+    busy_wait(10);
 
     for (unsigned int i = 0; i < gpio_in_masks.size(); i++) {
       GPIO_TypeDef *another_bank = Gpio::from_port_and_pin(i, 0).periph();
@@ -235,7 +235,6 @@ bool GpioShortsTestRun::test_has_shorts(bool with_loopback) {
       }
     }
     g.tristate();
-    vTaskDelay(1);
   }
 
   return !has_shorts;
@@ -243,7 +242,7 @@ bool GpioShortsTestRun::test_has_shorts(bool with_loopback) {
 
 bool GpioShortsTestRun::wait_loopback_board() {
   auto led_pin_state = GPIO_PIN_SET;
-  constexpr int timeout_cycles = 300; // 300*1000 ticks = 30 seconds
+  constexpr int timeout_cycles = 300; // 300*100 ticks = 30 seconds
   bool success = false;
   for (int i = 0; i < timeout_cycles; i++) {
     TickType_t cycle_start = xTaskGetTickCount();
@@ -257,7 +256,7 @@ bool GpioShortsTestRun::wait_loopback_board() {
 
     led_pin_state = (led_pin_state == GPIO_PIN_SET) ? GPIO_PIN_RESET : GPIO_PIN_SET;
     LED_PIN.output(led_pin_state);
-    vTaskDelayUntil(&cycle_start, 1000);
+    vTaskDelayUntil(&cycle_start, 100);
   }
 
   LED_PIN.output(GPIO_PIN_RESET);
@@ -275,6 +274,7 @@ bool GpioShortsTestRun::test_with_loopback() {
 
 uint32_t GpioShortsTestRun::test() {
   server_log("Start test");
+
   collect_gpios_to_test();
   init_gpio_periphs();
 

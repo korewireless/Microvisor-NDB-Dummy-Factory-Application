@@ -15,6 +15,17 @@
 #include "task.h"
 
 #include <cassert>
+#include <atomic>
+
+// There are not precise milliseconds, can be somewhat more or somewhat less
+static inline void busy_wait(int us) {
+  std::atomic_int cnt;
+
+  const long long end_cycles = ((long long)us) * ((long long)configCPU_CLOCK_HZ);
+  const int end_us = end_cycles / 100000000LL; // empirical quotient
+
+  for (cnt = 0; cnt < end_us; cnt++);
+};
 
 class FreeRTOSThread {
 private:
@@ -38,7 +49,7 @@ protected:
 public:
   FreeRTOSThread(const char* name,
                  size_t stack_size = configMINIMAL_STACK_SIZE/sizeof(StackType_t),
-                 int prio = 0) :
+                 int prio = 1) :
     name{name},
     stack_size{stack_size},
     prio{prio}

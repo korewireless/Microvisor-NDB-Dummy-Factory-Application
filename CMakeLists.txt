@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Set project name
-set(PROJECT_NAME "hardware_test_sample")
+set(PROJECT_NAME "ndb_hardware_test")
 
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/twilio-microvisor-hal-stm32u5/toolchain.cmake")
 

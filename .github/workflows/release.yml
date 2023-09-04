@@ -21,5 +21,5 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ndb_hardware_test
-        path: ${{ github.workspace }}/build/HardwareTest/ndb_hardware_test_${{ github.ref_name }}.*
+        name: ndb_hardware_test_${{ github.ref_name }}
+        path: ${{ github.workspace }}/build/HardwareTest/ndb_hardware_test.*

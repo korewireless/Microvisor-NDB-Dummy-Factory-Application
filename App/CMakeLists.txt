@@ -15,10 +15,9 @@ add_compile_definitions(BUILD_NUM=${BUILD_NUMBER})
 # Compile app source code file(s)
 add_executable(${PROJECT_NAME}
     main.cpp
-    gpio_shorts_test.cpp
+    led_thread.cpp
     gpio.cpp
     logger.c
-    test_runner.cpp
     system.c
     stm32u5xx_hal_timebase_tim.c
 )

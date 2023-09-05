@@ -1,6 +1,6 @@
-# Microvisor NDB test application
+# Microvisor NDB factory dummy application
 
-Test application for [Microvisor Nucleo Development Board](https://www.twilio.com/docs/iot/microvisor/microvisor-nucleo-development-board)
+Dummy application for [Microvisor Nucleo Development Board](https://www.twilio.com/docs/iot/microvisor/microvisor-nucleo-development-board). Shows heartbeat pattern on the user LED. To be used in the factory process to have a clear indication of a successfully provisioned board.
 
 ## Copyright
 

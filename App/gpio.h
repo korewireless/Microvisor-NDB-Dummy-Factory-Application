@@ -46,6 +46,7 @@ struct Gpio {
 
   void tristate() const;
   void output(GPIO_PinState state) const;
+  void af_pp(uint8_t af) const;
 
   static Gpio from_port_and_pin(unsigned port, unsigned pin) {
     return Gpio(PA0 + port*16 + pin);

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Set project name
-set(PROJECT_NAME "ndb_hardware_test")
+set(PROJECT_NAME "ndb_dummy_application")
 
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/twilio-microvisor-hal-stm32u5/toolchain.cmake")
 
@@ -62,4 +62,4 @@ target_include_directories(FreeRTOS PUBLIC
 )
 
 # Load the application
-add_subdirectory(HardwareTest)
+add_subdirectory(App)

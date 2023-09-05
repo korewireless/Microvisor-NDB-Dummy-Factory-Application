@@ -17,7 +17,6 @@ add_executable(${PROJECT_NAME}
     main.cpp
     led_thread.cpp
     gpio.cpp
-    logger.c
     system.c
     stm32u5xx_hal_timebase_tim.c
 )

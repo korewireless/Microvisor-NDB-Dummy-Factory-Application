@@ -12,20 +12,12 @@
 #include "freertos_thread.h"
 #include "mv_syscalls.h"
 
-#include "messages.h"
 #include "led_thread.h"
 #include "system.h"
-#include "logger.h"
-
 
 int main(void) {
     /* Initialize the system */
     system_init();
-
-    /* Initialize the logging */
-    server_log_init();
-
-    server_log("IN MAIN");
 
     /* Create the threads */
 

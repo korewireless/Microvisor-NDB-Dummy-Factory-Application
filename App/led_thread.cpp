@@ -1,8 +1,6 @@
 #include "led_thread.h"
 #include "stm32u5xx_hal.h"
 
-#include "logger.h"
-#include "messages.h"
 #include "gpio.h"
 
 #include <cstring>

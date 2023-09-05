@@ -11,7 +11,6 @@
 #define FREERTOS_THREAD_H
 
 #include "FreeRTOS.h"
-#include "logger.h"
 #include "task.h"
 
 #include <cassert>

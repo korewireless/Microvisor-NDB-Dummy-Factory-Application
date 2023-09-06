@@ -11,7 +11,7 @@ cd build
 cmake ..
 make -j$(nproc)
 
-twilio microvisor apps bundle ./HardwareTest/ndb_hardware_test.bin ./HardwareTest/ndb_hardware_test.zip
+twilio microvisor apps bundle ./App/ndb_dummy_application.bin ./App/ndb_dummy_application.zip
 
 if [[ -z "${MV_GA}" ]]; then
   [ -d artifacts ] && rm -rf artifacts
@@ -19,5 +19,5 @@ if [[ -z "${MV_GA}" ]]; then
   mkdir artifacts
 
   # Deploy -- requires env vars for device SID and Twilio creds to be set
-  twilio microvisor apps create ./HardwareTest/ndb_hardware_test.zip --bundle-out ../artifacts/ndb_hardware_test.signed.zip
+  twilio microvisor apps create ./App/ndb_dummy_application.zip --bundle-out ../artifacts/ndb_dummy_application.signed.zip
 fi

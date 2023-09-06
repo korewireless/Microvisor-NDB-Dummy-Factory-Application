@@ -15,11 +15,11 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Build docker image
-      run: docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t microvisor-hardware-test-sample-image .
+      run: docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t microvisor-dummy-app-image .
     - name: Build code
-      run: docker run --rm -v $(pwd)/:/home/mvisor/project/ --env MV_GA=$MV_GA --name ndb_hardware_test microvisor-hardware-test-sample-image
+      run: docker run --rm -v $(pwd)/:/home/mvisor/project/ --env MV_GA=$MV_GA --name ndb_dummy_app microvisor-dummy-app-image
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ndb_hardware_test
-        path: ${{ github.workspace }}/build/HardwareTest/ndb_hardware_test.*
+        name: ndb_dummy_app
+        path: ${{ github.workspace }}/build/App/ndb_dummy_application.*

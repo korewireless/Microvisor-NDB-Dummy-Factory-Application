@@ -14,21 +14,21 @@ private:
   TIM_HandleTypeDef timer;
 
   // GPIO, timer and channel are hard-coded, can become configurable if needed
-  const Gpio LED_PIN = PA5;
-  TIM_TypeDef* regs = TIM2;
+  const Gpio LED_PIN = PE0;
+  TIM_TypeDef* regs = TIM16;
   constexpr static auto channel = TIM_CHANNEL_1;
 
-  constexpr static auto gpio_af = GPIO_AF1_TIM2;
+  constexpr static auto gpio_af = GPIO_AF14_TIM16;
 
   void init_periphs()
   {
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOA_FORCE_RESET();
-    __HAL_RCC_GPIOA_RELEASE_RESET();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    __HAL_RCC_GPIOE_FORCE_RESET();
+    __HAL_RCC_GPIOE_RELEASE_RESET();
 
-    __HAL_RCC_TIM2_CLK_ENABLE();
-    __HAL_RCC_TIM2_FORCE_RESET();
-    __HAL_RCC_TIM2_RELEASE_RESET();
+    __HAL_RCC_TIM16_CLK_ENABLE();
+    __HAL_RCC_TIM16_FORCE_RESET();
+    __HAL_RCC_TIM16_RELEASE_RESET();
   }
 
   void init_pwm();

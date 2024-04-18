@@ -3,13 +3,10 @@ cmake_minimum_required(VERSION 3.12)
 # Set project name
 set(PROJECT_NAME "ndb_dummy_application")
 
-set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/twilio-microvisor-hal-stm32u5/toolchain.cmake")
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/Microvisor-HAL-STM32U5/toolchain.cmake")
 
 project(${PROJECT_NAME} C CXX ASM)
 
-
-include_directories(include
-                    ${twilio-microvisor-hal-stm32u5_INCLUDE_DIRS})
 
 set(INCLUDED_HAL_FILES
     Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c
@@ -24,7 +21,7 @@ set(INCLUDED_HAL_FILES
 )
 
 # Load the HAL
-add_subdirectory(twilio-microvisor-hal-stm32u5)
+add_subdirectory(Microvisor-HAL-STM32U5)
 
 # Build the STM32 middleware
 add_library(ST_Code STATIC
@@ -37,7 +34,7 @@ target_include_directories(ST_Code PUBLIC
 )
 
 target_link_libraries(ST_Code LINK_PUBLIC
-    twilio-microvisor-hal-stm32u5
+    Microvisor-HAL-STM32U5
     FreeRTOS
 )
 

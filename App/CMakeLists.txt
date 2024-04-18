@@ -23,7 +23,7 @@ add_executable(${PROJECT_NAME}
 
 # Link built libraries
 target_link_libraries(${PROJECT_NAME} LINK_PUBLIC
-    twilio-microvisor-hal-stm32u5
+    Microvisor-HAL-STM32U5
     FreeRTOS
     ST_Code
 )
